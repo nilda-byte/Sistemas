@@ -17,13 +17,14 @@ streamlit run app.py
 The Kivy UI lives in `main.py` and remains available for reference. Android packaging still uses Buildozer.
 
 ```bash
-python main.py
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install -r requirements.txt
 ```
 
 ```bash
-buildozer android debug
-# or
-buildozer android release
+python data/migrate.py
+python data/seed.py
 ```
 
 ## Architecture
@@ -32,23 +33,26 @@ buildozer android release
 - **Data**: SQLite via `data/database.py` + repositories in `data/repositories.py`.
 - **Services**: Android bridges for notifications and calendar via `services/`.
 
-## Permissions
-Configured in `buildozer.spec`:
-- `POST_NOTIFICATIONS`
-- `READ_CALENDAR`
-- `WRITE_CALENDAR`
-- `INTERNET`
+## Ejecutar la app
+```bash
+streamlit run app.py
+```
 
 ## Login (mandatory)
 The login flow is required before onboarding and home screens. The current implementation uses a local demo user stored in SQLite as a placeholder. Replace `UserRepository` in `data/repositories.py` with your OAuth/Google Sign-In integration using Python (e.g., OAuth device flow and token storage).
 
-## i18n (ES/EN)
-Translations are stored in `locales/` and loaded via `gettext`.
+## Tema (Catppuccin Latte / Nord)
+- El tema por defecto es **Catppuccin Latte**.
+- Puedes cambiarlo en **Ajustes** o desde la **sidebar**. Se guarda por usuario.
 
 ## Tests
-Unit tests live in `tests/test_logic.py` and cover streaks, XP, best hour, wildcard rules, and smart reminder intensity.
-
 ```bash
 python -m unittest tests/test_logic.py
 pytest tests/test_smoke_imports.py
 ```
+
+## Arquitectura
+- **UI**: `app.py` (Streamlit)
+- **Domain**: `domain/logic.py`
+- **Data**: `data/database.py`, `data/migrate.py`, `data/repositories.py`
+- **Servicios**: `services/`

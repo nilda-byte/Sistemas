@@ -3,6 +3,8 @@ from datetime import datetime
 from data.database import init_db
 from data.seed import TEMPLATES
 
+LEGACY_USER_EMAIL = "legacy@miniwins.local"
+
 
 class HabitRepository:
     def __init__(self, connection=None):
@@ -24,13 +26,12 @@ class HabitRepository:
             [
                 user_id,
                 habit["name"],
-                habit["emoji"],
-                habit["frequency"],
-                habit.get("days"),
-                habit.get("target_count"),
+                habit.get("category"),
+                habit.get("emoji"),
+                habit.get("frequency", "daily"),
+                int(habit.get("active", True)),
                 habit.get("suggested_time"),
-                int(habit.get("reminders_enabled", True)),
-                int(habit.get("calendar_sync", False)),
+                datetime.utcnow().isoformat(),
             ],
         )
 
