@@ -1,52 +1,46 @@
-# MiniWins (Streamlit)
+# MiniWins (Python + Kivy)
 
-MiniWins es un habit tracker web para estudiantes y trabajadores con gamificación, i18n ES/EN, recordatorios inteligentes y exportación de calendario.
+MiniWins is a bilingual (ES/EN) habit tracker built entirely in Python with Kivy, designed for Android packaging with Buildozer.
 
-## Requisitos (Windows 11)
-- Python 3.11 instalado (desde https://python.org)
-- Git (opcional) para clonar el repositorio
+## Requirements
+- Python 3.10+
+- Buildozer (for Android builds)
+- Android SDK/NDK (installed by Buildozer)
 
-## Instalación paso a paso (Windows 11)
-1. Abre **PowerShell**.
-2. Ve a la carpeta del proyecto:
-   ```powershell
-   cd C:\ruta\al\proyecto\MiniWins
-   ```
-3. Crea y activa un entorno virtual:
-   ```powershell
-   python -m venv .venv
-   .\.venv\Scripts\Activate.ps1
-   ```
-4. Instala dependencias:
-   ```powershell
-   pip install -r requirements.txt
-   ```
-5. Ejecuta la app:
-   ```powershell
-   streamlit run app.py
-   ```
-
-## Credenciales demo
-- **Email:** demo@miniwins.app
-- **Password:** Demo1234!
-
-## Estructura
-- `app.py`: aplicación Streamlit.
-- `data/`: SQLite, repositorios y seeds.
-- `domain/`: lógica de rachas, XP y mejores horas.
-- `services/`: auth, recordatorios inteligentes e ICS.
-- `i18n/`: traducciones ES/EN en JSON.
-- `assets/`: ilustraciones estilo street art (fallback si no cargan).
-- `tests/`: pruebas unitarias con pytest.
-
-## Tests
-```powershell
-python -m pytest
+## Run locally
+```bash
+python main.py
 ```
 
-Incluye un smoke test de imports para evitar fallos de arranque por errores de módulos.
+## Build for Android (APK/AAB)
+```bash
+buildozer android debug
+# or
+buildozer android release
+```
 
-## Notas
-- Base de datos SQLite se crea automáticamente al iniciar la app.
-- El onboarding carga hábitos seed según la plantilla seleccionada.
-- Exporta calendario con el botón “Descargar calendario (.ics)” e impórtalo en Google Calendar.
+## Architecture
+- **UI**: Kivy Screens (`screens` embedded in `main.py` for now) with ScreenManager.
+- **Domain**: `domain/logic.py` for streaks, XP, best hour, smart reminders, wildcard.
+- **Data**: SQLite via `data/database.py` + repositories in `data/repositories.py`.
+- **Services**: Android bridges for notifications and calendar via `services/`.
+
+## Permissions
+Configured in `buildozer.spec`:
+- `POST_NOTIFICATIONS`
+- `READ_CALENDAR`
+- `WRITE_CALENDAR`
+- `INTERNET`
+
+## Login (mandatory)
+The login flow is required before onboarding and home screens. The current implementation uses a local auth flag stored in SQLite as a placeholder. Replace `AuthRepository.sign_in()` in `data/repositories.py` with your OAuth/Google Sign-In integration using Python (e.g., OAuth device flow and token storage).
+
+## i18n (ES/EN)
+Translations are stored in `locales/` and loaded via `gettext`.
+
+## Tests
+Unit tests live in `tests/test_logic.py` and cover streaks, XP, best hour, wildcard rules, and smart reminder intensity.
+
+```bash
+python -m unittest tests/test_logic.py
+```

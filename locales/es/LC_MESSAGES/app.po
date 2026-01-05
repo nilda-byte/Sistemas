@@ -1,0 +1,68 @@
+msgid "slogan"
+msgstr "El éxito es producto de pequeños hábitos cotidianos"
+
+msgid "login_required"
+msgstr "Inicio de sesión obligatorio"
+
+msgid "continue_google"
+msgstr "Continuar con Google"
+
+msgid "auth_mock"
+msgstr "Auth mock activo"
+
+msgid "onboarding_title"
+msgstr "Elige tu modo inicial"
+
+msgid "onboarding_profile"
+msgstr "Elige tu perfil"
+
+msgid "onboarding_template"
+msgstr "Selecciona una plantilla"
+
+msgid "profile_student"
+msgstr "Estudiante"
+
+msgid "profile_worker"
+msgstr "Trabajador"
+
+msgid "profile_mixed"
+msgstr "Mixto"
+
+msgid "template_study"
+msgstr "Modo Estudio"
+
+msgid "template_work"
+msgstr "Modo Trabajo"
+
+msgid "template_wellbeing"
+msgstr "Bienestar"
+
+msgid "template_custom"
+msgstr "Empezar desde cero"
+
+msgid "continue_label"
+msgstr "Continuar"
+
+msgid "home_today"
+msgstr "Hoy"
+
+msgid "home_stats"
+msgstr "Stats"
+
+msgid "home_settings"
+msgstr "Ajustes"
+
+msgid "quick_complete"
+msgstr "Completar"
+
+msgid "quick_postpone"
+msgstr "Posponer"
+
+msgid "quick_skip"
+msgstr "Saltar"
+
+msgid "focus_mode"
+msgstr "Modo enfoque"
+
+msgid "stats_weekly"
+msgstr "Consistencia semanal"
