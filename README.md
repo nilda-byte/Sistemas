@@ -1,33 +1,45 @@
-# MiniWins (Streamlit)
+# MiniWins (Python + Streamlit)
 
-MiniWins es un habit tracker bilingüe (ES/EN) en Python, con interfaz principal en Streamlit y datos locales en SQLite.
+MiniWins is a bilingual (ES/EN) habit tracker built entirely in Python. The Streamlit app is the primary UI for local development and the main runtime target.
 
-## Requisitos
+## Requirements
 - Python 3.11+
 
-## Instalación
+## Run the Streamlit app (Windows/macOS/Linux)
+```bash
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+## Legacy Kivy UI (optional)
+The Kivy UI lives in `main.py` and remains available for reference. Android packaging still uses Buildozer.
+
 ```bash
 python -m venv .venv
 .\.venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-## Migraciones y seed
 ```bash
 python data/migrate.py
 python data/seed.py
 ```
 
-> `miniwins.db` es local y no se versiona en git.
+## Architecture
+- **UI**: Streamlit in `app.py` (primary), optional Kivy screens in `main.py`.
+- **Domain**: `domain/logic.py` for streaks, XP, best hour, smart reminders, wildcard.
+- **Data**: SQLite via `data/database.py` + repositories in `data/repositories.py`.
+- **Services**: Android bridges for notifications and calendar via `services/`.
 
 ## Ejecutar la app
 ```bash
 streamlit run app.py
 ```
 
-## Credenciales demo
-- Email: `demo@miniwins.app`
-- Password: `Demo1234!`
+## Login (mandatory)
+The login flow is required before onboarding and home screens. The current implementation uses a local demo user stored in SQLite as a placeholder. Replace `UserRepository` in `data/repositories.py` with your OAuth/Google Sign-In integration using Python (e.g., OAuth device flow and token storage).
 
 ## Tema (Catppuccin Latte / Nord)
 - El tema por defecto es **Catppuccin Latte**.
@@ -35,8 +47,8 @@ streamlit run app.py
 
 ## Tests
 ```bash
-ruff check .
-pytest -q
+python -m unittest tests/test_logic.py
+pytest tests/test_smoke_imports.py
 ```
 
 ## Arquitectura

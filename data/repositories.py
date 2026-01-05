@@ -9,28 +9,22 @@ LEGACY_USER_EMAIL = "legacy@miniwins.local"
 class HabitRepository:
     def __init__(self, connection=None):
         self.connection = self._resolve_connection(connection)
-        self.user_repository = UserRepository(self.connection)
 
-    def seed_template(self, template_key, user_id=None):
-        resolved_user_id = self._resolve_user_id(user_id)
+    def seed_template(self, user_id, template_key):
         for habit in TEMPLATES.get(template_key, []):
-            self.add_habit(resolved_user_id, habit)
+            self.add_habit(user_id, habit)
 
-    def add_habit(self, user_id, habit=None):
-        if habit is None:
-            habit = user_id
-            user_id = None
-        resolved_user_id = self._resolve_user_id(user_id)
+    def add_habit(self, user_id, habit):
         self._execute(
             """
             INSERT INTO habits (
-                user_id, name, category, emoji, frequency, active,
-                suggested_time, created_at
+                user_id, name, emoji, frequency, days, target_count,
+                suggested_time, reminders_enabled, calendar_sync
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             [
-                resolved_user_id,
+                user_id,
                 habit["name"],
                 habit.get("category"),
                 habit.get("emoji"),
@@ -41,80 +35,37 @@ class HabitRepository:
             ],
         )
 
-    def list_today_habits(self, user_id=None):
-        resolved_user_id = self._resolve_user_id(user_id)
-        return [
-            dict(row)
-            for row in self._fetchall(
-                "SELECT * FROM habits WHERE user_id = ? AND active = 1 ORDER BY id DESC",
-                [resolved_user_id],
-            )
-        ]
+    def list_today_habits(self, user_id):
+        return self.list_habits(user_id)
 
-    def list_habits(self, user_id=None):
-        resolved_user_id = self._resolve_user_id(user_id)
+    def list_habits(self, user_id):
         return [
             dict(row)
             for row in self._fetchall(
                 "SELECT * FROM habits WHERE user_id = ? ORDER BY id DESC",
-                [resolved_user_id],
+                [user_id],
             )
         ]
 
-    def delete_habit(self, habit_id, user_id=None):
-        resolved_user_id = self._resolve_user_id(user_id)
-        self._execute(
-            "DELETE FROM habit_logs WHERE habit_id = ? AND user_id = ?",
-            [habit_id, resolved_user_id],
-        )
-        self._execute(
-            "DELETE FROM habits WHERE id = ? AND user_id = ?",
-            [habit_id, resolved_user_id],
-        )
+    def delete_habit(self, habit_id):
+        self._execute("DELETE FROM habit_logs WHERE habit_id = ?", [habit_id])
+        self._execute("DELETE FROM habits WHERE id = ?", [habit_id])
 
-    def log_action(self, habit_id, status, note=None, user_id=None):
-        resolved_user_id = self._resolve_user_id(user_id)
-        habit = self._fetchone(
-            "SELECT id FROM habits WHERE id = ? AND user_id = ?",
-            [habit_id, resolved_user_id],
-        )
+    def log_action(self, habit_id, status, note=None):
+        habit = self._fetchone("SELECT user_id FROM habits WHERE id = ?", [habit_id])
         if not habit:
             return
         self._execute(
-            """
-            INSERT INTO habit_logs (habit_id, user_id, date, status, created_at)
-            VALUES (?, ?, ?, ?, ?)
-            """,
-            [
-                habit_id,
-                resolved_user_id,
-                datetime.utcnow().date().isoformat(),
-                status,
-                datetime.utcnow().isoformat(),
-            ],
+            "INSERT INTO habit_logs (habit_id, user_id, timestamp, status, note) VALUES (?, ?, ?, ?, ?)",
+            [habit_id, habit["user_id"], datetime.utcnow().isoformat(), status, note],
         )
 
-    def list_all_logs(self, user_id=None):
-        resolved_user_id = self._resolve_user_id(user_id)
+    def list_all_logs(self, user_id):
         return [
             dict(row)
             for row in self._fetchall(
-                "SELECT * FROM habit_logs WHERE user_id = ? ORDER BY created_at DESC",
-                [resolved_user_id],
-            )
-        ]
-
-    def list_logs_since(self, user_id, since_date):
-        resolved_user_id = self._resolve_user_id(user_id)
-        return [
-            dict(row)
-            for row in self._fetchall(
-                """
-                SELECT * FROM habit_logs
-                WHERE user_id = ? AND date >= ?
-                ORDER BY created_at DESC
-                """,
-                [resolved_user_id, since_date],
+                "SELECT * FROM habit_logs WHERE user_id = ? ORDER BY timestamp DESC",
+                [user_id],
             )
         ]
 
@@ -138,11 +89,6 @@ class HabitRepository:
         if connection is None:
             return init_db()
         return connection.connection if hasattr(connection, "connection") else connection
-
-    def _resolve_user_id(self, user_id):
-        if user_id is not None:
-            return user_id
-        return self.user_repository.get_or_create_legacy_user()
 
 
 class SettingsRepository:
@@ -189,16 +135,10 @@ class UserRepository:
 
     def create_user(self, email, password_hash):
         cursor = self._execute(
-            "INSERT INTO users (email, password_hash, created_at) VALUES (?, ?, ?)",
-            [email, password_hash, datetime.utcnow().isoformat()],
+            "INSERT INTO users (email, password_hash) VALUES (?, ?)",
+            [email, password_hash],
         )
         return cursor.lastrowid
-
-    def get_or_create_legacy_user(self):
-        existing = self.get_by_email(LEGACY_USER_EMAIL)
-        if existing:
-            return existing["id"]
-        return self.create_user(LEGACY_USER_EMAIL, "legacy")
 
     def _execute(self, query, params=None):
         cursor = self.connection.cursor()
