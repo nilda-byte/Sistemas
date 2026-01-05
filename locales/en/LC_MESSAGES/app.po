@@ -1,0 +1,68 @@
+msgid "slogan"
+msgstr "Success is built on small daily habits"
+
+msgid "login_required"
+msgstr "Login required"
+
+msgid "continue_google"
+msgstr "Continue with Google"
+
+msgid "auth_mock"
+msgstr "Auth mock active"
+
+msgid "onboarding_title"
+msgstr "Choose your starting mode"
+
+msgid "onboarding_profile"
+msgstr "Pick your profile"
+
+msgid "onboarding_template"
+msgstr "Select a template"
+
+msgid "profile_student"
+msgstr "Student"
+
+msgid "profile_worker"
+msgstr "Worker"
+
+msgid "profile_mixed"
+msgstr "Mixed"
+
+msgid "template_study"
+msgstr "Study Mode"
+
+msgid "template_work"
+msgstr "Work Mode"
+
+msgid "template_wellbeing"
+msgstr "Wellbeing"
+
+msgid "template_custom"
+msgstr "Start from scratch"
+
+msgid "continue_label"
+msgstr "Continue"
+
+msgid "home_today"
+msgstr "Today"
+
+msgid "home_stats"
+msgstr "Stats"
+
+msgid "home_settings"
+msgstr "Settings"
+
+msgid "quick_complete"
+msgstr "Complete"
+
+msgid "quick_postpone"
+msgstr "Postpone"
+
+msgid "quick_skip"
+msgstr "Skip"
+
+msgid "focus_mode"
+msgstr "Focus mode"
+
+msgid "stats_weekly"
+msgstr "Weekly consistency"
