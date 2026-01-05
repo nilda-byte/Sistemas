@@ -1,4 +1,8 @@
+import sys
 import unittest
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).resolve().parents[1]))
 from datetime import datetime, timedelta
 
 from domain.logic import StreakCalculator, XpCalculator, BestHourCalculator, SmartReminderEngine, WildcardRule

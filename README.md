@@ -1,46 +1,46 @@
-# MiniWins (Python + Kivy)
+# MiniWins (Streamlit)
 
-MiniWins is a bilingual (ES/EN) habit tracker built entirely in Python with Kivy, designed for Android packaging with Buildozer.
+MiniWins es un habit tracker bilingüe (ES/EN) en Python, con interfaz principal en Streamlit y datos locales en SQLite.
 
-## Requirements
-- Python 3.10+
-- Buildozer (for Android builds)
-- Android SDK/NDK (installed by Buildozer)
+## Requisitos
+- Python 3.11+
 
-## Run locally
+## Instalación
 ```bash
-python main.py
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install -r requirements.txt
 ```
 
-## Build for Android (APK/AAB)
+## Migraciones y seed
 ```bash
-buildozer android debug
-# or
-buildozer android release
+python data/migrate.py
+python data/seed.py
 ```
 
-## Architecture
-- **UI**: Kivy Screens (`screens` embedded in `main.py` for now) with ScreenManager.
-- **Domain**: `domain/logic.py` for streaks, XP, best hour, smart reminders, wildcard.
-- **Data**: SQLite via `data/database.py` + repositories in `data/repositories.py`.
-- **Services**: Android bridges for notifications and calendar via `services/`.
+> `miniwins.db` es local y no se versiona en git.
 
-## Permissions
-Configured in `buildozer.spec`:
-- `POST_NOTIFICATIONS`
-- `READ_CALENDAR`
-- `WRITE_CALENDAR`
-- `INTERNET`
+## Ejecutar la app
+```bash
+streamlit run app.py
+```
 
-## Login (mandatory)
-The login flow is required before onboarding and home screens. The current implementation uses a local auth flag stored in SQLite as a placeholder. Replace `AuthRepository.sign_in()` in `data/repositories.py` with your OAuth/Google Sign-In integration using Python (e.g., OAuth device flow and token storage).
+## Credenciales demo
+- Email: `demo@miniwins.app`
+- Password: `Demo1234!`
 
-## i18n (ES/EN)
-Translations are stored in `locales/` and loaded via `gettext`.
+## Tema (Catppuccin Latte / Nord)
+- El tema por defecto es **Catppuccin Latte**.
+- Puedes cambiarlo en **Ajustes** o desde la **sidebar**. Se guarda por usuario.
 
 ## Tests
-Unit tests live in `tests/test_logic.py` and cover streaks, XP, best hour, wildcard rules, and smart reminder intensity.
-
 ```bash
-python -m unittest tests/test_logic.py
+ruff check .
+pytest -q
 ```
+
+## Arquitectura
+- **UI**: `app.py` (Streamlit)
+- **Domain**: `domain/logic.py`
+- **Data**: `data/database.py`, `data/migrate.py`, `data/repositories.py`
+- **Servicios**: `services/`

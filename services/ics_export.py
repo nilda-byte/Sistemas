@@ -7,7 +7,10 @@ def generate_ics(habits):
     for habit in habits:
         if not habit.get("suggested_time"):
             continue
-        dt = datetime.strptime(habit["suggested_time"], "%H:%M")
+        try:
+            dt = datetime.strptime(habit["suggested_time"], "%H:%M")
+        except ValueError:
+            continue
         start = now.replace(hour=dt.hour, minute=dt.minute, second=0, microsecond=0)
         end = start + timedelta(minutes=10)
         lines.extend(

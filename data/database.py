@@ -1,60 +1,27 @@
 import sqlite3
 from pathlib import Path
 
+from data.migrate import ensure_schema
+
+DB_PATH = Path("miniwins.db")
+
+
+def get_connection():
+    connection = sqlite3.connect(DB_PATH)
+    connection.row_factory = sqlite3.Row
+    return connection
+
+
+def init_db():
+    connection = get_connection()
+    ensure_schema(connection)
+    return connection
+
 
 class Database:
     def __init__(self):
-        self.db_path = Path("miniwins.db")
-        self.connection = sqlite3.connect(self.db_path)
-        self.connection.row_factory = sqlite3.Row
-        self._create_tables()
-
-    def _create_tables(self):
-        cursor = self.connection.cursor()
-        cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS habits (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                emoji TEXT NOT NULL,
-                frequency TEXT NOT NULL,
-                days TEXT,
-                target_count INTEGER,
-                suggested_time TEXT,
-                reminders_enabled INTEGER,
-                calendar_sync INTEGER
-            )
-            """
-        )
-        cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS habit_logs (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                habit_id INTEGER NOT NULL,
-                timestamp TEXT NOT NULL,
-                status TEXT NOT NULL,
-                note TEXT,
-                FOREIGN KEY(habit_id) REFERENCES habits(id)
-            )
-            """
-        )
-        cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS settings (
-                key TEXT PRIMARY KEY,
-                value TEXT NOT NULL
-            )
-            """
-        )
-        cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS auth (
-                key TEXT PRIMARY KEY,
-                value TEXT NOT NULL
-            )
-            """
-        )
-        self.connection.commit()
+        self.db_path = DB_PATH
+        self.connection = init_db()
 
     def execute(self, query, params=None):
         cursor = self.connection.cursor()
