@@ -1,6 +1,5 @@
 import gettext
 import os
-from datetime import datetime
 
 from kivy.app import App
 from kivy.core.window import Window
@@ -10,9 +9,9 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 
 from data.database import Database
 from data.repositories import HabitRepository, SettingsRepository, AuthRepository
-from domain.logic import XpCalculator, StreakCalculator, BestHourCalculator, SmartReminderEngine, WildcardRule
 from services.notifications import NotificationService
 from services.calendar_sync import CalendarService
+from ui import utils
 
 KV = """
 #:import utils ui.utils

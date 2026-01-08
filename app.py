@@ -47,6 +47,16 @@ def render_header():
     st.caption("Hoy cuenta. Cada mini win suma.")
 
 
+def parse_log_timestamp(log):
+    raw_value = log.get("created_at") or log.get("timestamp")
+    if not raw_value:
+        return None
+    try:
+        return datetime.fromisoformat(raw_value)
+    except ValueError:
+        return None
+
+
 def _valid_email(email: str) -> bool:
     return re.match(r"^[^\s@]+@[^\s@]+\.[^\s@]+$", email or "") is not None
 
@@ -185,10 +195,12 @@ def today_screen(habit_repo: HabitRepository, settings_repo: SettingsRepository)
                 habit_repo.log_action(habit["id"], "skipped", user_id=st.session_state.user_id)
 
     logs = habit_repo.list_all_logs(st.session_state.user_id)
-    parsed_logs = [
-        {"timestamp": datetime.fromisoformat(log["created_at"]), "status": log["status"]}
-        for log in logs
-    ]
+    parsed_logs = []
+    for log in logs:
+        log_timestamp = parse_log_timestamp(log)
+        if not log_timestamp:
+            continue
+        parsed_logs.append({"timestamp": log_timestamp, "status": log["status"]})
     streak = StreakCalculator().calculate(parsed_logs)
     xp_result = XpCalculator().calculate(total_xp=0, streak=streak)
     wildcard = WildcardRule().has_wildcard(parsed_logs)
@@ -261,15 +273,20 @@ def stats_screen(habit_repo: HabitRepository):
         st.info("Aún no hay registros. Completa un hábito para ver tu progreso.")
         return
 
-    rows = [
-        {
-            "date": datetime.fromisoformat(log["date"]).date(),
-            "status": log["status"],
-            "habit_id": log["habit_id"],
-            "timestamp": datetime.fromisoformat(log["created_at"]),
-        }
-        for log in logs
-    ]
+    rows = []
+    for log in logs:
+        log_timestamp = parse_log_timestamp(log)
+        if not log_timestamp:
+            continue
+        date_value = log.get("date") or log_timestamp.date().isoformat()
+        rows.append(
+            {
+                "date": datetime.fromisoformat(date_value).date(),
+                "status": log["status"],
+                "habit_id": log["habit_id"],
+                "timestamp": log_timestamp,
+            }
+        )
 
     df = pd.DataFrame(rows)
     habits = habit_repo.list_habits(st.session_state.user_id)
@@ -328,22 +345,14 @@ def settings_screen(settings_repo: SettingsRepository):
         value=int(settings_repo.get(st.session_state.user_id, "dnd_end", "7")),
     )
 
-    themes = theme_options()
-    theme_labels = list(themes.values())
-    theme_keys = list(themes.keys())
-    current_theme = settings_repo.get(st.session_state.user_id, "theme", "catppuccin-latte")
-    theme_index = theme_keys.index(current_theme) if current_theme in theme_keys else 0
-    selected_label = st.selectbox("Tema", theme_labels, index=theme_index)
-    selected_theme_key = theme_keys[theme_labels.index(selected_label)]
+    st.caption("El tema se cambia desde el selector del sidebar.")
 
     if st.button("Guardar ajustes"):
         settings_repo.set(st.session_state.user_id, "language", language)
         settings_repo.set(st.session_state.user_id, "dnd_start", str(dnd_start))
         settings_repo.set(st.session_state.user_id, "dnd_end", str(dnd_end))
-        settings_repo.set(st.session_state.user_id, "theme", selected_theme_key)
         st.session_state.language = language
         st.session_state.translations = load_translations(language)
-        st.session_state.theme = selected_theme_key
         st.experimental_rerun()
 
 
@@ -381,7 +390,7 @@ def main():
     theme_keys = list(theme_options().keys())
     current_theme = st.session_state.theme
     theme_index = theme_keys.index(current_theme) if current_theme in theme_keys else 0
-    sidebar_theme = st.sidebar.selectbox("Tema", theme_labels, index=theme_index)
+    sidebar_theme = st.sidebar.selectbox("Tema", theme_labels, index=theme_index, key="theme_select")
     selected_theme_key = theme_keys[theme_labels.index(sidebar_theme)]
     if selected_theme_key != current_theme:
         settings_repo.set(st.session_state.user_id, "theme", selected_theme_key)
@@ -399,7 +408,11 @@ def main():
         onboarding_screen(habit_repo, settings_repo)
         return
 
-    menu = st.sidebar.radio("", ["Hoy", "Hábitos", "Stats", "Ajustes"])
+    menu = st.sidebar.radio(
+        "Navegación",
+        ["Hoy", "Hábitos", "Stats", "Ajustes"],
+        label_visibility="collapsed",
+    )
 
     if menu == "Hoy":
         today_screen(habit_repo, settings_repo)
